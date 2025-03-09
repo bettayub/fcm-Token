@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FCM Token Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .token-container { 
+            background: #f5f5f5; 
+            padding: 15px; 
+            margin: 20px 0; 
+            border-radius: 4px;
+        }
+        .status { 
+            padding: 10px; 
+            margin-top: 10px; 
+            border-radius: 4px; 
+        }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>FCM Token Test</h1>
+    <div class="token-container">
+        <h3>FCM Token:</h3>
+        <pre id="token">Fetching token...</pre>
+    </div>
+    <div id="status"></div>
+
+    <!-- Use type="module" to enable ES modules -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyAeXdW0tveIGclyNT0OOTGY77q-4bnanEs",
+            authDomain: "matx-5a0e6.firebaseapp.com",
+            projectId: "matx-5a0e6",
+            messagingSenderId: "63114335329",
+            appId: "1:63114335329:web:4a47a450a10f21a48b8620"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const messaging = getMessaging(app);
+        
+        function showStatus(message, isError = false) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${isError ? 'error' : 'success'}`;
+        }
+
+        async function registerToken(token) {
+            try {
+                const response = await fetch('/notifications/fcm_token', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        token: token,
+                        user_id: "019513d5-b74c-7fb4-ac83-273785cb8730",
+                        channel: "web"
+                    })
+                });
+                
+                if (!response.ok) throw new Error('Registration failed');
+                
+                const data = await response.json();
+                showStatus('Token registered successfully');
+                console.log('Registration success:', data);
+            } catch (error) {
+                showStatus('Registration failed: ' + error.message, true);
+                console.error('Registration error:', error);
+            }
+        }
+
+        // Request permission and get token
+        async function requestToken() {
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    const token = await getToken(messaging, {
+                        vapidKey: "BJrx2tuFYc8LWEs4soFCEbqRgSJbLilpvQoyBSnxNDtfNu-3dkQfWrU6oCshccA0GdHFqhoNirdYAHbEKM_HcCY"
+                    });
+                    
+                    document.getElementById('token').textContent = token;
+                    await registerToken(token);
+                } else {
+                    throw new Error('Permission denied');
+                }
+            } catch (error) {
+                showStatus('Error: ' + error.message, true);
+                console.error('Token error:', error);
+            }
+        }
+
+        // Handle incoming messages
+        onMessage(messaging, (payload) => {
+            console.log('Message received:', payload);
+            showStatus('New message: ' + payload.notification.title);
+        });
+        
+        // Start the process
+        requestToken();
+    </script>
+</body>
+</html>

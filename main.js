@@ -27,7 +27,7 @@ async function requestNotificationPermission() {
     if (permission === "granted") {
       const currentToken = await getToken(messaging, {
         vapidKey:
-          "BJrx2tuFYc8LWEs4soFCEbqRgSJbLilpvQoyBSnxNDtfNu-3dkQfWrU6oCshccA0GdHFqhoNirdYAHbEKM_HcCY",
+          "BG567DnvvpKPG1jqyYA7u0qnLD7z2athvRxs1_dizen5AIHP3oRXmNp-Aw9Hw4-5LVsBK3hcaYBTv0lUjT5fldM",
       });
 
       if (currentToken) {
